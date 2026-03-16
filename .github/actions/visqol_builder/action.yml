@@ -17,37 +17,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Setup Windows environment
-      if: inputs.platform == 'windows'
-      shell: pwsh
-      run: |
-        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-        $vsPath = & $vswhere -latest -property installationPath
-        $vcPath = "$vsPath\VC"
-
-        $pythonPath = (Get-Command python).Source
-        Write-Host "PYTHON_BIN_PATH=$pythonPath"
-        Write-Host "BAZEL_VC=$vcPath"
-
-        echo "PYTHON_BIN_PATH=$pythonPath" >> $env:GITHUB_ENV
-        echo "BAZEL_VC=$vcPath" >> $env:GITHUB_ENV
-
-        # Verify
-        $msvcDir = Get-ChildItem "$vcPath\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1
-        Write-Host "MSVC version: $($msvcDir.Name)"
-        $clPath = "$($msvcDir.FullName)\bin\Hostx64\x64\cl.exe"
-        Write-Host "cl.exe exists: $(Test-Path $clPath)"
-    - name: Test (Windows)
-      if: inputs.platform == 'windows'
-      shell: cmd
-      run: |
-        echo BAZEL_VC=%BAZEL_VC%
-        bazelisk test -c opt :all %BUILD_OPTIONS%
-      env:
-        BUILD_OPTIONS: ${{inputs.build-options}}
-    - name: Test (non-Windows)
-      if: inputs.platform != 'windows'
-      shell: bash
+    - shell: bash
       run: |
         bazelisk test -c opt :all ${{inputs.build-options}}
     - shell: bash
@@ -55,16 +25,7 @@ runs:
         if [[ "${{inputs.platform}}" != "windows" ]]; then
           bazelisk test -c opt python:all ${{inputs.build-options}}
         fi
-    - name: Build (Windows)
-      if: inputs.platform == 'windows'
-      shell: cmd
-      run: |
-        bazelisk build -c opt :all %BUILD_OPTIONS%
-      env:
-        BUILD_OPTIONS: ${{inputs.build-options}}
-    - name: Build (non-Windows)
-      if: inputs.platform != 'windows'
-      shell: bash
+    - shell: bash
       run: |
         bazelisk build -c opt :all ${{inputs.build-options}}
     - shell: bash
