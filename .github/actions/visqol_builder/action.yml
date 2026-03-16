@@ -17,59 +17,56 @@ inputs:
 runs:
   using: composite
   steps:
-    - shell: bash
-      run: |
-        if [[ "${{inputs.platform}}" == "windows" ]]; then
-          PYTHON_BIN=$(which python)
-          echo "PYTHON_BIN_PATH=$PYTHON_BIN" >> $GITHUB_ENV
-        fi
-    - name: Setup MSVC (Windows)
+    - name: Setup Windows environment
       if: inputs.platform == 'windows'
       shell: pwsh
       run: |
         $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
         $vsPath = & $vswhere -latest -property installationPath
         $vcPath = "$vsPath\VC"
-        Write-Host "VC path: $vcPath"
 
-        # Find MSVC tools version
-        $msvcDir = Get-ChildItem "$vcPath\Tools\MSVC" -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
-        if ($msvcDir) {
-          Write-Host "MSVC version: $($msvcDir.Name)"
-          $clPath = "$($msvcDir.FullName)\bin\Hostx64\x64\cl.exe"
-          if (Test-Path $clPath) {
-            Write-Host "cl.exe found at: $clPath"
-          } else {
-            Write-Host "cl.exe NOT found"
-            Get-ChildItem "$vcPath\Tools\MSVC" -Recurse -Filter "cl.exe" | ForEach-Object { Write-Host $_.FullName }
-          }
-        } else {
-          Write-Host "No MSVC tools directory found, installing C++ build tools..."
-          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe" modify `
-            --installPath "$vsPath" `
-            --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
-            --quiet --wait --norestart
-        }
+        $pythonPath = (Get-Command python).Source
+        Write-Host "PYTHON_BIN_PATH=$pythonPath"
+        Write-Host "BAZEL_VC=$vcPath"
+
+        echo "PYTHON_BIN_PATH=$pythonPath" >> $env:GITHUB_ENV
         echo "BAZEL_VC=$vcPath" >> $env:GITHUB_ENV
-    - shell: bash
+
+        # Verify
+        $msvcDir = Get-ChildItem "$vcPath\Tools\MSVC" | Sort-Object Name -Descending | Select-Object -First 1
+        Write-Host "MSVC version: $($msvcDir.Name)"
+        $clPath = "$($msvcDir.FullName)\bin\Hostx64\x64\cl.exe"
+        Write-Host "cl.exe exists: $(Test-Path $clPath)"
+    - name: Test (Windows)
+      if: inputs.platform == 'windows'
+      shell: cmd
       run: |
-        if [[ "${{inputs.platform}}" == "windows" ]]; then
-          bazelisk test -c opt :all --repo_env=BAZEL_VC="$BAZEL_VC" ${{inputs.build-options}}
-        else
-          bazelisk test -c opt :all ${{inputs.build-options}}
-        fi
+        echo BAZEL_VC=%BAZEL_VC%
+        bazelisk test -c opt :all %BUILD_OPTIONS%
+      env:
+        BUILD_OPTIONS: ${{inputs.build-options}}
+    - name: Test (non-Windows)
+      if: inputs.platform != 'windows'
+      shell: bash
+      run: |
+        bazelisk test -c opt :all ${{inputs.build-options}}
     - shell: bash
       run: |
         if [[ "${{inputs.platform}}" != "windows" ]]; then
           bazelisk test -c opt python:all ${{inputs.build-options}}
         fi
-    - shell: bash
+    - name: Build (Windows)
+      if: inputs.platform == 'windows'
+      shell: cmd
       run: |
-        if [[ "${{inputs.platform}}" == "windows" ]]; then
-          bazelisk build -c opt :all --repo_env=BAZEL_VC="$BAZEL_VC" ${{inputs.build-options}}
-        else
-          bazelisk build -c opt :all ${{inputs.build-options}}
-        fi
+        bazelisk build -c opt :all %BUILD_OPTIONS%
+      env:
+        BUILD_OPTIONS: ${{inputs.build-options}}
+    - name: Build (non-Windows)
+      if: inputs.platform != 'windows'
+      shell: bash
+      run: |
+        bazelisk build -c opt :all ${{inputs.build-options}}
     - shell: bash
       run: |
         if [[ "${{inputs.platform}}" != "windows" ]]; then
