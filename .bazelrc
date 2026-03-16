@@ -50,22 +50,19 @@ build -c opt
 # ViSQOL is overridding the default c++14 settings in tensorflow.
 # TF's .bazelrc claims it c++14 required, but it is likely required
 # in the sense that it is backwards compatible with c++17.
-build --cxxopt=-std=c++17
-build --linkopt=-ldl
-build --host_cxxopt=-std=c++17
+# Note: Windows uses /std:c++20 set in the windows config section below.
+build:linux --cxxopt=-std=c++17
+build:linux --host_cxxopt=-std=c++17
+build:linux --linkopt=-ldl
+build:macos --cxxopt=-std=c++17
+build:macos --host_cxxopt=-std=c++17
+build:macos --linkopt=-ldl
 
 build --experimental_repo_remote_exec
 
 # Enable platform specific config (e.g. by default use --config=windows when on windows, and --config=linux when on linux)
 build --enable_platform_specific_config
 
-
-## Linux config
-# GCC 13+ requires explicit cstdint include (TensorFlow 2.11.0 compatibility)
-build:linux --cxxopt=-include
-build:linux --cxxopt=cstdint
-build:linux --host_cxxopt=-include
-build:linux --host_cxxopt=cstdint
 
 ## Windows config
 startup --windows_enable_symlinks
@@ -107,3 +104,6 @@ build:windows --host_linkopt=/OPT:ICF
 # in MSVC
 build:windows --host_copt=-D__PRETTY_FUNCTION__=__FUNCSIG__
 build:windows --copt=-D__PRETTY_FUNCTION__=__FUNCSIG__
+
+# Import user-specific settings (not tracked by git)
+try-import %workspace%/.bazelrc.user
