@@ -19,6 +19,13 @@ runs:
   steps:
     - shell: bash
       run: |
+        if [[ "${{inputs.platform}}" == "windows" ]]; then
+          PYTHON_BIN=$(which python)
+          export PYTHON_BIN_PATH="$PYTHON_BIN"
+          echo "PYTHON_BIN_PATH=$PYTHON_BIN" >> $GITHUB_ENV
+        fi
+    - shell: bash
+      run: |
         bazelisk test -c opt :all ${{inputs.build-options}}
     - shell: bash
       run: |
