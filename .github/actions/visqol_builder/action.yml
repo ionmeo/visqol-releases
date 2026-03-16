@@ -23,8 +23,28 @@ runs:
           PYTHON_BIN=$(which python)
           export PYTHON_BIN_PATH="$PYTHON_BIN"
           echo "PYTHON_BIN_PATH=$PYTHON_BIN" >> $GITHUB_ENV
-          echo "BAZEL_VC=C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC" >> $GITHUB_ENV
         fi
+    - name: Setup MSVC (Windows)
+      if: inputs.platform == 'windows'
+      shell: pwsh
+      run: |
+        # Find VS installation and verify C++ tools
+        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $vsPath = & $vswhere -latest -property installationPath
+        Write-Host "VS installation: $vsPath"
+        $vcPath = "$vsPath\VC"
+        Write-Host "VC path: $vcPath"
+        # List what's in VC\Auxiliary\Build
+        if (Test-Path "$vcPath\Auxiliary\Build\vcvarsall.bat") {
+          Write-Host "vcvarsall.bat found"
+        } else {
+          Write-Host "vcvarsall.bat NOT found, installing C++ build tools..."
+          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe" modify `
+            --installPath "$vsPath" `
+            --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+            --quiet --wait --norestart
+        }
+        echo "BAZEL_VC=$vcPath" >> $env:GITHUB_ENV
     - shell: bash
       run: |
         bazelisk test -c opt :all ${{inputs.build-options}}
