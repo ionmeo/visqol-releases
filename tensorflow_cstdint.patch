@@ -1,0 +1,9 @@
+diff --git a/tensorflow/lite/kernels/internal/spectrogram.cc b/tensorflow/lite/kernels/internal/spectrogram.cc
+--- a/tensorflow/lite/kernels/internal/spectrogram.cc
++++ b/tensorflow/lite/kernels/internal/spectrogram.cc
+@@ -17,6 +17,7 @@ limitations under the License.
+
+ #include <math.h>
++#include <cstdint>
+
+ #include <vector>

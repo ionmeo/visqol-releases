@@ -84,6 +84,8 @@ git_repository(
     # Below is reproducible and equivalent to `tag = "v2.11.0"`
     commit = "d5b57ca93e506df258271ea00fc29cf98383a374",
     shallow_since = "1668561432 -0800",
+    patch_args = ["-p1"],
+    patches = ["//:tensorflow_cstdint.patch"],
 )
 
 # Import all of TensorFlow Serving's external dependencies.
