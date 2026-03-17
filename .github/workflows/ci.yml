@@ -3,25 +3,8 @@ name: build
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  linux-amd64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-      - name: Setup ViSQOL dependencies
-        uses: ./.github/actions/setup_visqol_deps
-      - name: Build, test, and upload
-        uses: ./.github/actions/visqol_builder
-        with:
-          platform: linux
-          architecture: amd64
-
-  # macos-amd64:
-  #   runs-on: macos-latest
+  # linux-amd64:
+  #   runs-on: ubuntu-latest
   #   steps:
   #     - name: Checkout repo
   #       uses: actions/checkout@v2
@@ -34,8 +17,25 @@ jobs:
   #     - name: Build, test, and upload
   #       uses: ./.github/actions/visqol_builder
   #       with:
-  #         platform: macos
+  #         platform: linux
   #         architecture: amd64
+
+  macos-amd64:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Setup ViSQOL dependencies
+        uses: ./.github/actions/setup_visqol_deps
+      - name: Build, test, and upload
+        uses: ./.github/actions/visqol_builder
+        with:
+          platform: macos
+          architecture: amd64
 
   # windows-amd64:
   #   runs-on: windows-latest
