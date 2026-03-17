@@ -19,19 +19,19 @@ runs:
   steps:
     - shell: bash
       run: |
-        bazelisk test --noenable_bzlmod -c opt :all ${{inputs.build-options}}
+        bazelisk test -c opt :all ${{inputs.build-options}}
     - shell: bash
       run: |
         if [[ "${{inputs.platform}}" != "windows" ]]; then
-          bazelisk test --noenable_bzlmod -c opt python:all ${{inputs.build-options}}
+          bazelisk test -c opt python:all ${{inputs.build-options}}
         fi
     - shell: bash
       run: |
-        bazelisk build --noenable_bzlmod -c opt :all ${{inputs.build-options}}
+        bazelisk build -c opt :all ${{inputs.build-options}}
     - shell: bash
       run: |
         if [[ "${{inputs.platform}}" != "windows" ]]; then
-          bazelisk build --noenable_bzlmod -c opt python:all ${{inputs.build-options}}
+          bazelisk build -c opt python:all ${{inputs.build-options}}
         fi
     - shell: bash
       run: |

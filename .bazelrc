@@ -40,8 +40,6 @@ build --verbose_failures=true
 build --spawn_strategy=standalone
 build --genrule_strategy=standalone
 
-common --noenable_bzlmod
-
 build --define=grpc_no_ares=true
 
 # Sets the default Apple platform to macOS.
@@ -52,25 +50,9 @@ build -c opt
 # ViSQOL is overridding the default c++14 settings in tensorflow.
 # TF's .bazelrc claims it c++14 required, but it is likely required
 # in the sense that it is backwards compatible with c++17.
-# Note: Windows uses /std:c++20 set in the windows config section below.
-build:linux --cxxopt=-std=c++17
-build:linux --host_cxxopt=-std=c++17
-build:linux --linkopt=-ldl
-# Fix missing uint32_t in TensorFlow Lite with newer GCC
-build:linux --cxxopt=-include
-build:linux --cxxopt=cstdint
-build:linux --host_cxxopt=-include
-build:linux --host_cxxopt=cstdint
-build:macos --cxxopt=-std=c++17
-build:macos --host_cxxopt=-std=c++17
-build:macos --linkopt=-ldl
-# Fix zlib 1.3 K&R syntax errors with Xcode 16+ (allows old-style function declarations)
-build:macos --copt=-Wno-deprecated-non-prototype
-build:macos --host_copt=-Wno-deprecated-non-prototype
-build:macos --copt=-Wno-strict-prototypes
-build:macos --host_copt=-Wno-strict-prototypes
-build:macos --per_file_copt=external/zlib[:/].*\\.c$@-std=gnu89
-build:macos --host_per_file_copt=external/zlib[:/].*\\.c$@-std=gnu89
+build --cxxopt=-std=c++17
+build --linkopt=-ldl
+build --host_cxxopt=-std=c++17
 
 build --experimental_repo_remote_exec
 
@@ -119,5 +101,5 @@ build:windows --host_linkopt=/OPT:ICF
 build:windows --host_copt=-D__PRETTY_FUNCTION__=__FUNCSIG__
 build:windows --copt=-D__PRETTY_FUNCTION__=__FUNCSIG__
 
-# Import user-specific settings (not tracked by git)
+# Import user-specific settings
 try-import %workspace%/.bazelrc.user
