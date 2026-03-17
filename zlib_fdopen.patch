@@ -1,11 +1,13 @@
 --- a/zutil.h
 +++ b/zutil.h
-@@ -144,6 +144,8 @@
- #  ifdef NO_FSEEKO
- #    define ZLIB_NO_FSEEKO
- #    define fseeko(f, o, w) fseek((f), (o), (w))
-+#    if !defined(__APPLE__)
- #        define fdopen(fd,mode) NULL /* No fdopen() */
-+#    endif
+@@ -143,9 +143,7 @@
+ #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os
+ #      include <unix.h> /* for fdopen */
+ #    else
+-#      ifndef fdopen
+-#        define fdopen(fd,mode) NULL /* No fdopen() */
+-#      endif
++#      /* fdopen macro removed - conflicts with modern macOS SDK */
+ #    endif
  #  endif
  #endif
