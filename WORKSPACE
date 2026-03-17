@@ -16,11 +16,10 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 """,
-    sha256 = "8a9ba2898e1d0d774eca6ba5b4627a11e5588ba85c8851336eb38de4571f51ee",
+    sha256 = "ff0ba4c292013dbc27530b3a81e1f9a813cd39de01ca5e0f8bf355702efa593e",
     strip_prefix = "zlib-1.3",
     urls = [
-        "https://github.com/madler/zlib/releases/download/v1.3/zlib-1.3.tar.xz",
-        "https://zlib.net/zlib-1.3.tar.xz",
+        "https://github.com/madler/zlib/releases/download/v1.3/zlib-1.3.tar.gz",
     ],
     patch_args = ["-p1"],
     patches = ["//:zlib_fdopen.patch"],
