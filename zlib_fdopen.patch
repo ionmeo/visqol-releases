@@ -1,6 +1,6 @@
 --- a/zutil.h
 +++ b/zutil.h
-@@ -144,7 +144,9 @@
+@@ -144,6 +144,8 @@
  #  ifdef NO_FSEEKO
  #    define ZLIB_NO_FSEEKO
  #    define fseeko(f, o, w) fseek((f), (o), (w))
