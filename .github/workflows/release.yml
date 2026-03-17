@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag (e.g., v1.0.0)'
+        description: 'Release tag'
         required: true
       overwrite:
         description: 'Overwrite existing release'
@@ -14,61 +14,46 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Check if release exists
-        id: check_release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check existing release
+        if: inputs.overwrite == false
         run: |
-          if gh release view ${{ inputs.tag }} --repo ${{ github.repository }} > /dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
+          if gh release view ${{ inputs.tag }} --repo ${{ github.repository }}; then
+            echo "::error::Release ${{ inputs.tag }} already exists. Use overwrite=true to replace."
+            exit 1
           fi
 
-      - name: Fail if release exists and overwrite not set
-        if: steps.check_release.outputs.exists == 'true' && inputs.overwrite == false
+      - name: Delete existing release
+        if: inputs.overwrite == true
         run: |
-          echo "::error::Release ${{ inputs.tag }} already exists. Run with overwrite=true to replace it."
-          exit 1
-
-      - name: Delete existing release if overwrite
-        if: steps.check_release.outputs.exists == 'true' && inputs.overwrite == true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release delete ${{ inputs.tag }} --repo ${{ github.repository }} --yes
+          gh release delete ${{ inputs.tag }} --repo ${{ github.repository }} --yes || true
           git push --delete origin ${{ inputs.tag }} || true
 
-      - name: Get latest build run ID
+      - name: Get latest build run
         id: get_run
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           RUN_ID=$(gh run list --repo ${{ github.repository }} --workflow=ci.yml --status=success --limit=1 --json databaseId -q '.[0].databaseId')
           echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
-          echo "Found latest successful build run: $RUN_ID"
 
-      - name: Download artifacts from build
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           run-id: ${{ steps.get_run.outputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: artifacts
 
-      - name: Create release zips
+      - name: Create zips
         run: |
           cd artifacts
           for dir in */; do
-            name="${dir%/}"
-            zip -r "../${name}.zip" "$dir"
+            zip -r "../${dir%/}.zip" "$dir"
           done
-          cd ..
-          ls -la *.zip
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
           files: "*.zip"
-          generate_release_notes: true
+          body: ""
