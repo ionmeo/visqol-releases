@@ -56,10 +56,14 @@ build -c opt
 build:linux --cxxopt=-std=c++17
 build:linux --host_cxxopt=-std=c++17
 build:linux --linkopt=-ldl
+# Fix missing uint32_t in TensorFlow Lite with newer GCC
+build:linux --cxxopt=-include
+build:linux --cxxopt=cstdint
+build:linux --host_cxxopt=-include
+build:linux --host_cxxopt=cstdint
 build:macos --cxxopt=-std=c++17
 build:macos --host_cxxopt=-std=c++17
 build:macos --linkopt=-ldl
-
 # Fix zlib 1.3 K&R syntax errors with Xcode 16+ (allows old-style function declarations)
 build:macos --copt=-Wno-deprecated-non-prototype
 build:macos --host_copt=-Wno-deprecated-non-prototype

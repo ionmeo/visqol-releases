@@ -131,7 +131,7 @@ protobuf_deps()
 git_repository(
     name = "com_google_googletest",
     remote = "https://github.com/google/googletest.git",
-    tag = "release-1.10.0",
+    tag = "v1.14.0",
 )
 
 # Google Abseil Libs
