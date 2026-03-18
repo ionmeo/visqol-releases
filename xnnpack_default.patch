@@ -1,0 +1,11 @@
+--- a/BUILD.bazel
++++ b/BUILD.bazel
+@@ -10543,6 +10543,8 @@ cc_library(
+         ":emscripten_wasm": PROD_SSE_MICROKERNEL_DEPS,
+         ":emscripten_wasmsimd": PROD_WASMSIMD_MICROKERNEL_DEPS,
+         ":emscripten_wasmrelaxedsimd": PROD_WASMRELAXEDSIMD_MICROKERNEL_DEPS,
++        # Default fallback for unmatched configurations (e.g., macOS x86_64 exec)
++        "//conditions:default": PROD_SSE_MICROKERNEL_DEPS,
+     }),
+     linkstatic = True,
+ )

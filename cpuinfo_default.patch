@@ -1,0 +1,19 @@
+--- a/BUILD.bazel
++++ b/BUILD.bazel
+@@ -127,6 +127,7 @@ CPUINFO_SRCS = [
+
+ # Workaround for https://github.com/bazelbuild/bazel/issues/14912
+ # TODO: Remove this workaround once we drop bazel 5.x support
++# Added default case for macOS x86_64 exec configuration compatibility
+ cc_library(
+     name = "cpuinfo_impl",
+     srcs = select({
+@@ -155,6 +156,8 @@ cc_library(
+         ":watchos_arm64_32": CPUINFO_SRCS + CPUINFO_ARM_SRCS + CPUINFO_MACH_SRCS,
+         ":tvos_x86_64": CPUINFO_SRCS + CPUINFO_X86_SRCS + CPUINFO_MACH_SRCS,
+         ":tvos_arm64": CPUINFO_SRCS + CPUINFO_ARM_SRCS + CPUINFO_MACH_SRCS,
++        # Default fallback for unmatched configurations (e.g., macOS x86_64 exec)
++        "//conditions:default": CPUINFO_SRCS + CPUINFO_X86_SRCS + CPUINFO_MACH_SRCS,
+     }) + select({
+         ":windows_x86_64": [],
+         "//conditions:default": CLOG_SRCS,
