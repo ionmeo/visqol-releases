@@ -103,24 +103,20 @@ git_repository(
     tag = "v1.14.0",
 )
 
-# cpuinfo - imported before TensorFlow to add default case for macOS x86_64 exec config
+# cpuinfo - imported before TensorFlow (newer version with Windows ARM64 support)
 http_archive(
     name = "cpuinfo",
-    sha256 = "18eca9bc8d9c4ce5496d0d2be9f456d55cbbb5f0639a551ce9c8bac2e84d85fe",
-    strip_prefix = "cpuinfo-5e63739504f0f8e18e941bd63b2d6d42536c7d90",
-    urls = ["https://github.com/pytorch/cpuinfo/archive/5e63739504f0f8e18e941bd63b2d6d42536c7d90.tar.gz"],
-    patch_args = ["-p1"],
-    patches = ["//:cpuinfo_default.patch"],
+    sha256 = "4de984b08a2420038765fb225710ae3ade6e4d54ef219677530e2c19cab305e5",
+    strip_prefix = "cpuinfo-7607ca500436b37ad23fb8d18614bec7796b68a7",
+    urls = ["https://github.com/pytorch/cpuinfo/archive/7607ca500436b37ad23fb8d18614bec7796b68a7.tar.gz"],
 )
 
-# XNNPACK - imported before TensorFlow to add default case for macOS x86_64 exec config
+# XNNPACK - imported before TensorFlow (newer version with Windows ARM64 support)
 http_archive(
     name = "XNNPACK",
-    sha256 = "7a16ab0d767d9f8819973dbea1dc45e4e08236f89ab702d96f389fdc78c5855c",
-    strip_prefix = "XNNPACK-e8f74a9763aa36559980a0c2f37f587794995622",
-    urls = ["https://github.com/google/XNNPACK/archive/e8f74a9763aa36559980a0c2f37f587794995622.zip"],
-    patch_args = ["-p1"],
-    patches = ["//:xnnpack_default.patch"],
+    sha256 = "4659d368e7a54dd8513071a9ac677762ef007a4cf2e4379d44c8dda7b2aece90",
+    strip_prefix = "XNNPACK-03200882c9254e3dfe2f9c27ff18de8a7e6cee74",
+    urls = ["https://github.com/google/XNNPACK/archive/03200882c9254e3dfe2f9c27ff18de8a7e6cee74.zip"],
 )
 
 git_repository(
