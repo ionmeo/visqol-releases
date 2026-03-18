@@ -1,5 +1,14 @@
 --- a/build_defs.bzl
 +++ b/build_defs.bzl
+@@ -146,7 +146,7 @@ def xnnpack_cc_library(
+             ":emscripten_wasm": wasm_srcs,
+             ":emscripten_wasmsimd": wasmsimd_srcs,
+             ":emscripten_wasmrelaxedsimd": wasmrelaxedsimd_srcs,
+-            "//conditions:default": [],
++            "//conditions:default": x86_srcs,
+         }),
+         copts = [
+             "-Iinclude",
 @@ -249,6 +249,7 @@ def xnnpack_aggregate_library(
              ":emscripten_wasmsimd": wasmsimd_deps,
              ":emscripten_wasmrelaxedsimd": wasmrelaxedsimd_deps,
