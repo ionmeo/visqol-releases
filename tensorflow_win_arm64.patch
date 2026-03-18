@@ -20,32 +20,3 @@
      name = "no_tensorflow_py_deps",
      define_values = {"no_tensorflow_py_deps": "true"},
      visibility = ["//visibility:public"],
---- a/tensorflow/lite/build_def.bzl
-+++ b/tensorflow/lite/build_def.bzl
-@@ -31,6 +31,10 @@
-             "/DTFL_COMPILE_LIBRARY",
-             "/wd4018",  # -Wno-sign-compare
-         ],
-+        clean_dep("//tensorflow:windows_arm64"): [
-+            "/DTFL_COMPILE_LIBRARY",
-+            "/wd4018",  # -Wno-sign-compare
-+        ],
-         "//conditions:default": [
-             "-Wno-sign-compare",
-         ],
-@@ -45,6 +49,7 @@
-         "//conditions:default": [],
-     }) + select({
-         clean_dep("//tensorflow:windows"): [],
-+        clean_dep("//tensorflow:windows_arm64"): [],
-         "//conditions:default": [
-             "-fno-exceptions",  # Exceptions are unused in TFLite.
-         ],
-@@ -71,6 +76,7 @@
-             # Windows toolchain, but we compromise with keeping BUILD files simple
-             # by limiting the number of config_setting's.
-         ],
-+        clean_dep("//tensorflow:windows_arm64"): [],
-         "//conditions:default": [
-             "-Wall",
-         ],
