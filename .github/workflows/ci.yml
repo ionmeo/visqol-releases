@@ -113,3 +113,4 @@ jobs:
         with:
           platform: windows
           architecture: arm64
+          build-options: "--cpu=arm64_windows"
