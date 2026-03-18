@@ -130,7 +130,7 @@ git_repository(
     commit = "d5b57ca93e506df258271ea00fc29cf98383a374",
     shallow_since = "1668561432 -0800",
     patch_args = ["-p1"],
-    patches = ["//:tensorflow_cstdint.patch"],
+    patches = ["//:tensorflow_cstdint.patch", "//:tensorflow_win_arm64.patch"],
 )
 
 # Import all of TensorFlow Serving's external dependencies.
@@ -227,6 +227,8 @@ new_git_repository(
     name = "pffft_lib",
     commit = "7c3b5a7dc510a0f513b9c5b6dc5b56f7aeeda422",
     shallow_since = "1644946905 +0000",
+    patch_args = ["-p1"],
+    patches = ["//:pffft_neon_msvc.patch"],
     build_file_content = """
 cc_library(
     name = "pffft_lib",

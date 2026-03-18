@@ -1,22 +1,47 @@
 --- a/BUILD.bazel
 +++ b/BUILD.bazel
-@@ -16224,6 +16224,11 @@ config_setting(
-     values = {"cpu": "x64_windows"},
+@@ -16228,6 +16228,11 @@
  )
 
-+config_setting(
+ config_setting(
 +    name = "windows_arm64",
 +    values = {"cpu": "arm64_windows"},
 +)
 +
- config_setting(
++config_setting(
      name = "windows_x86_64_clang",
      values = {
-@@ -16378,6 +16383,7 @@ selects.config_setting_group(
-     name = "aarch64",
-     match_any = [
-         ":android_arm64",
-+        ":windows_arm64",
-         ":ios_arm64",
-         ":ios_arm64e",
-         ":ios_sim_arm64",
+         "compiler": "clang-cl",
+--- a/build_defs.bzl
++++ b/build_defs.bzl
+@@ -146,6 +146,7 @@
+             ":emscripten_wasm": wasm_srcs,
+             ":emscripten_wasmsimd": wasmsimd_srcs,
+             ":emscripten_wasmrelaxedsimd": wasmrelaxedsimd_srcs,
++            ":windows_arm64": [s for s in aarch64_srcs if not s.endswith(".S")],
+             "//conditions:default": x86_srcs,
+         }),
+         copts = [
+@@ -179,12 +180,14 @@
+             ":emscripten_wasm": wasm_copts,
+             ":emscripten_wasmsimd": wasmsimd_copts,
+             ":emscripten_wasmrelaxedsimd": wasmrelaxedsimd_copts,
++            ":windows_arm64": [],
+             "//conditions:default": gcc_x86_copts,
+         }) + select({
+             ":windows_x86_64_clang": ["/clang:" + opt for opt in gcc_copts],
+             ":windows_x86_64_mingw": gcc_copts,
+             ":windows_x86_64_msys": gcc_copts,
+             ":windows_x86_64": msvc_copts,
++            ":windows_arm64": msvc_copts,
+             "//conditions:default": gcc_copts,
+         }) + select({
+             ":optimized_build": optimized_copts,
+@@ -249,6 +252,7 @@
+             ":emscripten_wasmsimd": wasmsimd_deps,
+             ":emscripten_wasmrelaxedsimd": wasmrelaxedsimd_deps,
+             ":riscv": riscv_deps,
++            ":windows_arm64": aarch64_deps,
+             "//conditions:default": x86_deps,
+         }),
+         defines = defines,
