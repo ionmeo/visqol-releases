@@ -122,8 +122,8 @@ http_archive(
     strip_prefix = "XNNPACK-e8f74a9763aa36559980a0c2f37f587794995622",
     urls = ["https://github.com/google/XNNPACK/archive/e8f74a9763aa36559980a0c2f37f587794995622.zip"],
     patch_cmds = [
-        # Add default case to amalgam_microkernels deps select()
-        "perl -i -pe 's/(\":riscv\":.*,)/$$1\\n        \"\\x2f\\x2fconditions:default\": [],/' BUILD.bazel",
+        # Add default case after every :riscv line in select() statements
+        "sed 's/\":riscv\": \\(.*\\),/\":riscv\": \\1,\\n        \"\\x2f\\x2fconditions:default\": [],/' BUILD.bazel > BUILD.bazel.new && mv BUILD.bazel.new BUILD.bazel",
     ],
 )
 
