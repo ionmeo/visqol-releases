@@ -14,9 +14,10 @@
  cc_library(
      name = "farmhash",
      srcs = ["src/farmhash.cc"],
-@@ -17,5 +24,6 @@
+@@ -17,6 +24,7 @@
      copts = select({
          ":windows": ["/DFARMHASH_OPTIONAL_BUILTIN_EXPECT"],
 +        ":windows_arm64": ["/DFARMHASH_OPTIONAL_BUILTIN_EXPECT"],
          "//conditions:default": [],
      }),
+     includes = ["src/."],
