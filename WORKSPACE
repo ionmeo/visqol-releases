@@ -110,7 +110,7 @@ http_archive(
     strip_prefix = "cpuinfo-5e63739504f0f8e18e941bd63b2d6d42536c7d90",
     urls = ["https://github.com/pytorch/cpuinfo/archive/5e63739504f0f8e18e941bd63b2d6d42536c7d90.tar.gz"],
     patch_args = ["-p1"],
-    patches = ["//:cpuinfo_default.patch", "//:cpuinfo_win_arm64.patch", "//:cpuinfo_clog_win_arm64.patch", "//:cpuinfo_msvc_compat.patch", "//:cpuinfo_msvc_compat_cache.patch", "//:cpuinfo_msvc_compat_uarch.patch"],
+    patches = ["//:cpuinfo_default.patch", "//:cpuinfo_win_arm64.patch", "//:cpuinfo_clog_win_arm64.patch"],
 )
 
 # XNNPACK - imported before TensorFlow to add default case for macOS x86_64 exec config

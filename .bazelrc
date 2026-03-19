@@ -108,5 +108,12 @@ build:windows --host_linkopt=/OPT:ICF
 build:windows --host_copt=-D__PRETTY_FUNCTION__=__FUNCSIG__
 build:windows --copt=-D__PRETTY_FUNCTION__=__FUNCSIG__
 
+## Windows ARM64 config
+# TF 2.11's pinned XNNPACK/cpuinfo versions lack Windows ARM64 runtime support
+# (no .S assembler for MSVC, missing init code). Disable XNNPACK delegate —
+# TFLite falls back to the default CPU backend.
+build:windows_arm64 --cpu=arm64_windows
+build:windows_arm64 --define tflite_with_xnnpack=false
+
 # Import user-specific settings
 try-import %workspace%/.bazelrc.user
