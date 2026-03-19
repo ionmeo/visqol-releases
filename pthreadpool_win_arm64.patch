@@ -1,21 +1,24 @@
 --- a/BUILD.bazel
 +++ b/BUILD.bazel
-@@ -27,6 +27,11 @@ config_setting(
-     },
- )
-
-+config_setting(
-+    name = "windows_arm64",
-+    values = {"cpu": "arm64_windows"},
-+)
-+
- config_setting(
-     name = "emscripten",
-@@ -44,6 +49,7 @@ cc_library(
-         ":macos_arm64": INTERNAL_HDRS + GCD_IMPL_SRCS,
-         ":ios": INTERNAL_HDRS + GCD_IMPL_SRCS,
+@@ -46,6 +46,7 @@
+         ":watchos": INTERNAL_HDRS + GCD_IMPL_SRCS,
+         ":tvos": INTERNAL_HDRS + GCD_IMPL_SRCS,
          ":windows_x86_64": INTERNAL_HDRS + WINDOWS_IMPL_SRCS,
 +        ":windows_arm64": INTERNAL_HDRS + WINDOWS_IMPL_SRCS,
          "//conditions:default": INTERNAL_HDRS + PTHREADS_IMPL_SRCS,
      }) + select({
          ":linux_x86_64": ARCH_SPECIFIC_SRCS,
+@@ -401,6 +402,13 @@
+     },
+ )
+
++config_setting(
++    name = "windows_arm64",
++    values = {
++        "cpu": "arm64_windows",
++    },
++)
++
+ config_setting(
+     name = "emscripten",
+     values = {
