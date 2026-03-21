@@ -4,29 +4,11 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
 
-# zlib - must be imported BEFORE TensorFlow to fix macOS Xcode 16+ fdopen conflict
-http_archive(
+# import zlib before TensorFlow to override TF's older version
+git_repository(
     name = "zlib",
-    build_file_content = """
-cc_library(
-    name = "zlib",
-    srcs = glob(["*.c"]),
-    hdrs = glob(["*.h"]),
-    includes = ["."],
-    copts = select({
-        "@bazel_tools//src/conditions:darwin": ["-include", "unistd.h"],
-        "//conditions:default": [],
-    }),
-    visibility = ["//visibility:public"],
-)
-""",
-    sha256 = "ff0ba4c292013dbc27530b3a81e1f9a813cd39de01ca5e0f8bf355702efa593e",
-    strip_prefix = "zlib-1.3",
-    urls = [
-        "https://github.com/madler/zlib/releases/download/v1.3/zlib-1.3.tar.gz",
-    ],
-    patch_args = ["-p1"],
-    patches = ["//:zlib_fdopen.patch"],
+    remote = "https://github.com/madler/zlib.git",
+    tag = "v1.3.2",
 )
 
 # The order of importing the archives is very important here.  In particular, tensorflow's
