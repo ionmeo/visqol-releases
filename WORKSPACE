@@ -4,13 +4,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
 
-# import zlib before TensorFlow to override TF's older version
-git_repository(
-    name = "zlib",
-    remote = "https://github.com/madler/zlib.git",
-    tag = "v1.3.2",
-)
-
 # The order of importing the archives is very important here.  In particular, tensorflow's
 # workspace import function imports a version of pybind11 and protobuf that are older and
 # not compatible with current pybind11_protobuf/abseil.  Since the first import is the only
@@ -85,14 +78,22 @@ git_repository(
     tag = "v1.14.0",
 )
 
-# cpuinfo - imported before TensorFlow to add default case for macOS x86_64 exec config
-http_archive(
+# Import zlib 1.3.2 before TensorFlow to override TF's bundled zlib 1.2.13 
+# which defines a fdopen macro that conflicts with newer macOS SDK headers.
+# zlib 1.3.2 is also the first release to include BUILD.bazel file, making
+# integration with VISQOL easier.
+git_repository(
+    name = "zlib",
+    remote = "https://github.com/madler/zlib.git",
+    tag = "v1.3.2",
+)
+
+# Import cpuinfo-6543fec before TensorFlow to override TF's bundled
+# cpuinfo-5e63739 for windows-arm64 support
+git_repository(
     name = "cpuinfo",
-    sha256 = "18eca9bc8d9c4ce5496d0d2be9f456d55cbbb5f0639a551ce9c8bac2e84d85fe",
-    strip_prefix = "cpuinfo-5e63739504f0f8e18e941bd63b2d6d42536c7d90",
-    urls = ["https://github.com/pytorch/cpuinfo/archive/5e63739504f0f8e18e941bd63b2d6d42536c7d90.tar.gz"],
-    patch_args = ["-p1"],
-    patches = ["//:cpuinfo_default.patch", "//:cpuinfo_win_arm64.patch", "//:cpuinfo_clog_win_arm64.patch"],
+    remote = "https://github.com/pytorch/cpuinfo.git",
+    commit = "6543fec09b2f04ac4a666882998b534afc9c1349",
 )
 
 # XNNPACK - imported before TensorFlow to add default case for macOS x86_64 exec config
