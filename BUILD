@@ -10,7 +10,7 @@ exports_files(["LICENSE"])
 
 +config_setting(
     name = "disable_xnnpack",
-    define_values = {"tflite_with_xnnpack": "false"},
+    define_values = {"disable_xnnpack": "true"},
 )
 
 # Libraries
