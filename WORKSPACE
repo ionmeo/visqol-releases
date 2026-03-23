@@ -93,7 +93,7 @@ git_repository(
 git_repository(
     name = "cpuinfo",
     remote = "https://github.com/pytorch/cpuinfo.git",
-    commit = "6543fec09b2f04ac4a666882998b534afc9c1349",
+    commit = "7607ca500436b37ad23fb8d18614bec7796b68a7",
 )
 
 # XNNPACK - imported before TensorFlow to add default case for macOS x86_64 exec config
