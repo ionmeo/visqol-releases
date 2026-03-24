@@ -8,9 +8,9 @@ licenses(["notice"])
 
 exports_files(["LICENSE"])
 
-+config_setting(
+config_setting(
     name = "disable_xnnpack",
-    define_values = {"disable_xnnpack": "true"},
+    define_values = {"tflite_with_xnnpack": "false"},
 )
 
 # Libraries
