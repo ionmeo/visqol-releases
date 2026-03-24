@@ -110,7 +110,7 @@ jobs:
               PLATFORM="${ENTRY%%:*}"
               RUN_ID="${ENTRY##*:}"
               echo "Downloading $PLATFORM from run $RUN_ID..."
-              gh run download $RUN_ID --repo ${{ github.repository }} --name "$PLATFORM" --dir artifacts
+              gh run download $RUN_ID --repo ${{ github.repository }} --name "$PLATFORM" --dir "artifacts/$PLATFORM"
             done
           else
             RUN_ID="${{ steps.latest_run.outputs.run_ids }}${{ steps.all_succeeded.outputs.run_ids }}"
