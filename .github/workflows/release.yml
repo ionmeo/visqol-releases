@@ -10,12 +10,21 @@ on:
         description: 'Overwrite existing release'
         type: boolean
         default: false
+      strategy:
+        description: 'Artifact strategy'
+        type: choice
+        options:
+          - 'latest-run'
+          - 'latest-all-passed'
+          - 'latest-per-platform'
+        default: 'latest-run'
 
 jobs:
   release:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PLATFORMS: "visqol-linux-amd64 visqol-linux-arm64 visqol-macos-amd64 visqol-macos-arm64 visqol-windows-amd64 visqol-windows-arm64"
     steps:
       - name: Check existing release
         if: inputs.overwrite == false
@@ -31,18 +40,80 @@ jobs:
           gh release delete ${{ inputs.tag }} --repo ${{ github.repository }} --yes || true
           git push --delete origin ${{ inputs.tag }} || true
 
-      - name: Get latest build run
-        id: get_run
+      - name: Collect artifacts (latest-run)
+        if: inputs.strategy == 'latest-run'
+        id: latest_run
         run: |
           RUN_ID=$(gh run list --repo ${{ github.repository }} --workflow=ci.yml --status=success --limit=1 --json databaseId -q '.[0].databaseId')
-          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::No successful build runs found"
+            exit 1
+          fi
+          echo "run_ids=$RUN_ID" >> $GITHUB_OUTPUT
+          echo "Using latest run: $RUN_ID"
+
+      - name: Collect artifacts (latest-all-passed)
+        if: inputs.strategy == 'latest-all-passed'
+        id: all_succeeded
+        run: |
+          RUNS=$(gh run list --repo ${{ github.repository }} --workflow=ci.yml --status=success --limit=20 --json databaseId -q '.[].databaseId')
+          for RUN_ID in $RUNS; do
+            ARTIFACT_NAMES=$(gh api repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts --jq '.artifacts[].name' | sort)
+            ALL_FOUND=true
+            for PLATFORM in $PLATFORMS; do
+              if ! echo "$ARTIFACT_NAMES" | grep -q "^${PLATFORM}$"; then
+                ALL_FOUND=false
+                break
+              fi
+            done
+            if [ "$ALL_FOUND" = true ]; then
+              echo "run_ids=$RUN_ID" >> $GITHUB_OUTPUT
+              echo "Found run with all 6 artifacts: $RUN_ID"
+              exit 0
+            fi
+          done
+          echo "::error::No build run found with all 6 platform artifacts in the last 20 runs"
+          exit 1
+
+      - name: Collect artifacts (latest-per-platform)
+        if: inputs.strategy == 'latest-per-platform'
+        id: best_of_each
+        run: |
+          RUNS=$(gh run list --repo ${{ github.repository }} --workflow=ci.yml --status=success --limit=20 --json databaseId -q '.[].databaseId')
+          FOUND_RUNS=""
+          MISSING=""
+          for PLATFORM in $PLATFORMS; do
+            FOUND=false
+            for RUN_ID in $RUNS; do
+              HAS=$(gh api repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts --jq ".artifacts[].name" | grep -q "^${PLATFORM}$" && echo yes || echo no)
+              if [ "$HAS" = "yes" ]; then
+                echo "$PLATFORM -> run $RUN_ID"
+                FOUND_RUNS="$FOUND_RUNS $RUN_ID"
+                FOUND=true
+                break
+              fi
+            done
+            if [ "$FOUND" = false ]; then
+              MISSING="$MISSING $PLATFORM"
+            fi
+          done
+          if [ -n "$MISSING" ]; then
+            echo "::warning::Missing artifacts for:$MISSING"
+          fi
+          UNIQUE_RUNS=$(echo $FOUND_RUNS | tr ' ' '\n' | sort -u | tr '\n' ' ')
+          echo "run_ids=$UNIQUE_RUNS" >> $GITHUB_OUTPUT
+          echo "Using runs: $UNIQUE_RUNS"
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          run-id: ${{ steps.get_run.outputs.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: artifacts
+        run: |
+          mkdir -p artifacts
+          RUN_IDS="${{ steps.latest_run.outputs.run_ids }}${{ steps.all_succeeded.outputs.run_ids }}${{ steps.best_of_each.outputs.run_ids }}"
+          for RUN_ID in $RUN_IDS; do
+            echo "Downloading from run $RUN_ID..."
+            gh run download $RUN_ID --repo ${{ github.repository }} --dir artifacts
+          done
+          echo "Downloaded artifacts:"
+          ls artifacts/
 
       - name: Create zips
         run: |
