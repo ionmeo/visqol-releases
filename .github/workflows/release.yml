@@ -34,12 +34,6 @@ jobs:
             exit 1
           fi
 
-      - name: Delete existing release
-        if: inputs.overwrite == true
-        run: |
-          gh release delete ${{ inputs.tag }} --repo ${{ github.repository }} --yes || true
-          git push --delete origin ${{ inputs.tag }} || true
-
       - name: Collect artifacts (latest-run)
         if: inputs.strategy == 'latest-run'
         id: latest_run
@@ -127,7 +121,13 @@ jobs:
             zip -r "../${dir%/}.zip" "$dir"
           done
 
-      - name: Create release
+      - name: Upload to existing release
+        if: inputs.overwrite == true
+        run: |
+          gh release upload ${{ inputs.tag }} *.zip --clobber --repo ${{ github.repository }}
+
+      - name: Create new release
+        if: inputs.overwrite == false
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
