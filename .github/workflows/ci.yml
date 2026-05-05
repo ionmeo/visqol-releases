@@ -1,9 +1,27 @@
 name: build
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:
+    inputs:
+      note:
+        description: 'Label for this run'
+        required: false
+        default: ''
+      linux-amd64:
+        type: boolean
+        default: true
+      macos-arm64:
+        type: boolean
+        default: true
+      windows-amd64:
+        type: boolean
+        default: true
+
+run-name: "${{ inputs.note || 'build' }}"
 
 jobs:
   linux-amd64:
+    if: ${{ inputs.linux-amd64 }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -20,7 +38,8 @@ jobs:
           platform: linux
           architecture: amd64
 
-  macos-amd64:
+  macos-arm64:
+    if: ${{ inputs.macos-arm64 }}
     runs-on: macos-latest
     steps:
       - name: Checkout repo
@@ -35,9 +54,10 @@ jobs:
         uses: ./.github/actions/visqol_builder
         with:
           platform: macos
-          architecture: amd64
+          architecture: arm64
 
   windows-amd64:
+    if: ${{ inputs.windows-amd64 }}
     runs-on: windows-latest
     steps:
       - name: Checkout repo
