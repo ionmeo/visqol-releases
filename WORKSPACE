@@ -79,6 +79,16 @@ git_repository(
     tag = "release-1.11.0",
 )
 
+# Import zlib 1.3.2 before TensorFlow to override TF's bundled zlib 1.2.13 
+# which defines a fdopen macro that conflicts with newer macOS SDK headers.
+# zlib 1.3.2 is also the first release to include the BUILD.bazel file, 
+# making integration with VISQOL easier.
+git_repository(
+    name = "zlib",
+    remote = "https://github.com/madler/zlib.git",
+    tag = "v1.3.2",
+)
+
 git_repository(
     name = "org_tensorflow",
     remote = "https://github.com/tensorflow/tensorflow.git",
