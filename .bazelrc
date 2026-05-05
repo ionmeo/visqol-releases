@@ -100,3 +100,6 @@ build:windows --host_linkopt=/OPT:ICF
 # in MSVC
 build:windows --host_copt=-D__PRETTY_FUNCTION__=__FUNCSIG__
 build:windows --copt=-D__PRETTY_FUNCTION__=__FUNCSIG__
+
+# Import user-specific settings
+try-import %workspace%/.bazelrc.user

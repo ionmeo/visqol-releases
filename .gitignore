@@ -5,3 +5,4 @@
 /bazel-visqol
 /visqol_lib_py
 .vscode
+.bazelrc.user
