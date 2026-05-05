@@ -70,6 +70,15 @@ http_archive(
     urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.19.1.tar.gz"],
 )
 
+# GoogleTest v1.11.0 fixes @bazel_tools//platforms:windows constraint error
+# by using @platforms//os:windows instead. It is imported before TensorFlow
+# to prevent TF from using the older incompatible version.
+git_repository(
+    name = "com_google_googletest",
+    remote = "https://github.com/google/googletest.git",
+    tag = "release-1.11.0",
+)
+
 git_repository(
     name = "org_tensorflow",
     remote = "https://github.com/tensorflow/tensorflow.git",
@@ -126,13 +135,6 @@ rules_pkg_dependencies()
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
-
-# GoogleTest/GoogleMock framework.
-git_repository(
-    name = "com_google_googletest",
-    remote = "https://github.com/google/googletest.git",
-    tag = "release-1.10.0",
-)
 
 # Google Abseil Libs
 git_repository(
