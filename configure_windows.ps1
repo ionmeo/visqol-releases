@@ -59,6 +59,10 @@ $bazelrcContent = @"
 # Fixes "Configuration Error: --define PYTHON_BIN_PATH='C:/path/python.exe' is not executable. Is it the python binary?"
 build:windows --action_env=BAZEL_SH="$bashPath"
 build:windows --repo_env=PYTHON_BIN_PATH="$pythonPath"
+
+# Fixes "<3>WSL (11) ERROR: CreateProcessCommon:559: execvpe(/bin/bash) failed: No such file or directory"
+# Error caused by WSL bash (C:\Windows\system32\bash.exe) being used instead of Git bash
+build:windows --shell_executable="$bashPath"
 "@
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
