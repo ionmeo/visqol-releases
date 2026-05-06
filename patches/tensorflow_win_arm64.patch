@@ -1,0 +1,37 @@
+--- a/tensorflow/BUILD
++++ b/tensorflow/BUILD
+@@ -316,7 +316,7 @@
+ 
+ # TODO(jakeharmon): Remove in favor of TSL version
+ config_setting(
+-    name = "windows",
++    name = "_windows_x64",
+     # Internal builds query the target OS.
+     flag_values = if_google(
+         {"//tools/cpp:cc_target_os": "windows"},
+@@ -330,6 +330,25 @@
+     visibility = ["//visibility:public"],
+ )
+ 
++config_setting(
++    name = "_windows_arm64",
++    flag_values = if_google(
++        {"//tools/cpp:cc_target_os": "windows"},
++        {},
++    ),
++    values = if_oss(
++        {"cpu": "arm64_windows"},
++        {},
++    ),
++    visibility = ["//visibility:public"],
++)
++
++selects.config_setting_group(
++    name = "windows",
++    match_any = [":_windows_x64", ":_windows_arm64"],
++    visibility = ["//visibility:public"],
++)
++
+ config_setting(
+     name = "no_tensorflow_py_deps",
+     define_values = {"no_tensorflow_py_deps": "true"},

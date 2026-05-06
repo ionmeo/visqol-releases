@@ -105,7 +105,7 @@ git_repository(
     commit = "d5b57ca93e506df258271ea00fc29cf98383a374",
     shallow_since = "1668561432 -0800",
     patch_args = ["-p1"],
-    patches = ["//:patches/tensorflow_cstdint.patch"],
+    patches = ["//:patches/tensorflow_cstdint.patch", "//:patches/tensorflow_win_arm64.patch"],
 )
 
 # Import all of TensorFlow Serving's external dependencies.
