@@ -89,6 +89,15 @@ git_repository(
     tag = "v1.3.2",
 )
 
+# Import cpuinfo before TensorFlow to override TF's bundled version (commit 5e63739),
+# which lacks windows-arm64 support. Commit ff24ffe is the last commit before BUILD.bazel
+# file was modified for Bazel 9 compatibility, and bumping past it breaks the build.
+git_repository(
+    name = "cpuinfo",
+    remote = "https://github.com/pytorch/cpuinfo.git",
+    commit = "ff24ffee8340fbd9001cce6a9ef41cdd16aa2bd3",
+)
+
 git_repository(
     name = "org_tensorflow",
     remote = "https://github.com/tensorflow/tensorflow.git",
