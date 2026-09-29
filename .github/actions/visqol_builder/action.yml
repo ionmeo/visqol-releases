@@ -46,6 +46,20 @@ runs:
         cp model/libsvm_nu_svr_model.txt action-product/model/
         cp LICENSE action-product/
         cp README.md action-product/
+    - shell: bash
+      working-directory: action-product
+      run: |
+        smoke_test() {
+          output=$(./visqol "$@")
+          echo "$output"
+          grep -q "MOS-LQO" <<< "$output"
+        }
+        smoke_test \
+          --reference_file ../testdata/conformance_testdata_subset/guitar48_stereo.wav \
+          --degraded_file ../testdata/conformance_testdata_subset/guitar48_stereo_64kbps_aac.wav
+        smoke_test --use_speech_mode \
+          --reference_file ../testdata/clean_speech/CA01_01.wav \
+          --degraded_file ../testdata/clean_speech/transcoded_CA01_01.wav
     - uses: actions/upload-artifact@v6
       with:
         name: visqol-${{ inputs.platform }}-${{ inputs.architecture }}

@@ -60,6 +60,11 @@ build --experimental_repo_remote_exec
 build --enable_platform_specific_config
 
 
+## macOS config
+# macOS 11 is the first version to support ARM-based Macs
+build:macos --macos_minimum_os=11.0
+
+
 ## Windows config
 startup --windows_enable_symlinks
 build:windows --enable_runfiles
