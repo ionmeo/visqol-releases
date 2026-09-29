@@ -64,10 +64,10 @@ runs:
         for version in 3.8 3.9 3.10 3.11 3.12 3.13 3.14; do
           python_bin=$(command -v python$version)
           echo "::group::Python $version ($python_bin)"
+          "$python_bin" -m pip install --quiet numpy absl-py "protobuf<6"
           bazelisk build -c opt python:visqol_lib_py.so --repo_env=PYTHON_BIN_PATH="$python_bin" ${{inputs.build-options}}
           suffix=$("$python_bin" -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
           cp bazel-bin/python/visqol_lib_py.so "action-product/python/visqol_lib_py$suffix"
-          "$python_bin" -m pip install --quiet numpy absl-py "protobuf<6"
           PYTHONPATH="action-product:action-product/python" "$python_bin" python/visqol_lib_py_test.py
           echo "::endgroup::"
         done
