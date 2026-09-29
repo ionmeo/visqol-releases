@@ -19,7 +19,7 @@ http_archive(
     name = "pybind11_bazel",
     patch_args = ["-p1"],
     # TODO(b/228236234): Remove patch after merging https://github.com/pybind/pybind11_bazel/pull/38
-    patches = ["//:pybind11_fixdistutils.patch", "//:patches/pybind11_bazel_headers.patch"],
+    patches = ["//:pybind11_fixdistutils.patch", "//:patches/pybind11_bazel_headers.patch", "//:patches/pybind11_bazel_win_arm64.patch"],
     strip_prefix = "pybind11_bazel-72cbbf1fbc830e487e3012862b7b720001b70672",
     sha256 = "516c1b3a10d87740d2b7de6f121f8e19dde2c372ecbfe59aef44cd1872c10395",
     urls = ["https://github.com/pybind/pybind11_bazel/archive/72cbbf1fbc830e487e3012862b7b720001b70672.tar.gz"],

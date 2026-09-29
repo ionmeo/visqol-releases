@@ -1,0 +1,12 @@
+--- a/py/BUILD.tpl
++++ b/py/BUILD.tpl
+@@ -72,7 +72,8 @@
+ 
+ config_setting(
+     name = "windows",
+-    values = {"cpu": "x64_windows"},
++    # Match both x64_windows and arm64_windows.
++    constraint_values = ["@platforms//os:windows"],
+     visibility = ["//visibility:public"],
+ )
+ 

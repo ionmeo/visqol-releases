@@ -13,6 +13,17 @@ inputs:
       description: bazel build command options
       required: false
       default: ""
+  python-versions:
+    description: Python versions to build bindings for
+    required: false
+    default: |
+      3.8
+      3.9
+      3.10
+      3.11
+      3.12
+      3.13
+      3.14
 
 runs:
   using: composite
@@ -45,30 +56,34 @@ runs:
         smoke_test --use_speech_mode \
           --reference_file ../testdata/clean_speech/CA01_01.wav \
           --degraded_file ../testdata/clean_speech/transcoded_CA01_01.wav
-    - if: inputs.platform != 'windows'
-      uses: actions/setup-python@v6
+    - uses: actions/setup-python@v6
       with:
-        python-version: |
-          3.8
-          3.9
-          3.10
-          3.11
-          3.12
-          3.13
-          3.14
-    - if: inputs.platform != 'windows'
-      shell: bash
+        python-version: ${{ inputs.python-versions }}
+    - shell: bash
+      env:
+        PYTHON_VERSIONS: ${{ inputs.python-versions }}
       run: |
+        find_python() {
+          if [[ "${{inputs.platform}}" == "windows" ]]; then
+            py -$1 -c 'import sys, pathlib; print(pathlib.Path(sys.executable).as_posix())'
+          else
+            command -v "python$1"
+          fi
+        }
+        path_sep=":"
+        if [[ "${{inputs.platform}}" == "windows" ]]; then
+          path_sep=";"
+        fi
         mkdir -p action-product/python
         cp bazel-bin/*_pb2.py action-product/python/
-        for version in 3.8 3.9 3.10 3.11 3.12 3.13 3.14; do
-          python_bin=$(command -v python$version)
+        for version in $PYTHON_VERSIONS; do
+          python_bin=$(find_python "$version")
           echo "::group::Python $version ($python_bin)"
           "$python_bin" -m pip install --quiet numpy absl-py "protobuf<6"
           bazelisk build -c opt python:visqol_lib_py.so --repo_env=PYTHON_BIN_PATH="$python_bin" ${{inputs.build-options}}
           suffix=$("$python_bin" -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
           cp bazel-bin/python/visqol_lib_py.so "action-product/python/visqol_lib_py$suffix"
-          PYTHONPATH="action-product:action-product/python" "$python_bin" python/visqol_lib_py_test.py
+          PYTHONPATH="action-product${path_sep}action-product/python" "$python_bin" -B python/visqol_lib_py_test.py
           echo "::endgroup::"
         done
     - uses: actions/upload-artifact@v6
