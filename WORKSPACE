@@ -19,19 +19,20 @@ http_archive(
     name = "pybind11_bazel",
     patch_args = ["-p1"],
     # TODO(b/228236234): Remove patch after merging https://github.com/pybind/pybind11_bazel/pull/38
-    patches = ["//:pybind11_fixdistutils.patch"],
+    patches = ["//:pybind11_fixdistutils.patch", "//:patches/pybind11_bazel_headers.patch"],
     strip_prefix = "pybind11_bazel-72cbbf1fbc830e487e3012862b7b720001b70672",
     sha256 = "516c1b3a10d87740d2b7de6f121f8e19dde2c372ecbfe59aef44cd1872c10395",
     urls = ["https://github.com/pybind/pybind11_bazel/archive/72cbbf1fbc830e487e3012862b7b720001b70672.tar.gz"],
 )
 
 # We still require the pybind library.
+# pybind11 3.0.x is the last version that supports Python 3.8 to 3.14.
 http_archive(
     name = "pybind11",
     build_file = "@pybind11_bazel//:pybind11.BUILD",
-    strip_prefix = "pybind11-2.9.2",
-    sha256 = "6bd528c4dbe2276635dc787b6b1f2e5316cf6b49ee3e150264e455a0d68d19c1",
-    urls = ["https://github.com/pybind/pybind11/archive/refs/tags/v2.9.2.tar.gz"],
+    strip_prefix = "pybind11-3.0.4",
+    sha256 = "74b6a2c2b4573a400cafb6ecbf60c98df300cd3d0041296b913d02b2cbbb2676",
+    urls = ["https://github.com/pybind/pybind11/archive/refs/tags/v3.0.4.tar.gz"],
 )
 
 load("@pybind11_bazel//:python_configure.bzl", "python_configure")

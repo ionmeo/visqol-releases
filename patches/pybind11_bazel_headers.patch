@@ -1,0 +1,13 @@
+--- a/pybind11.BUILD
++++ b/pybind11.BUILD
+@@ -16,8 +16,8 @@
+ ]
+ 
+ INCLUDES = [
+-    "include/pybind11/*.h",
+-    "include/pybind11/detail/*.h",
++    # pybind11 3.x also has headers in conduit/, eigen/ and stl/.
++    "include/pybind11/**/*.h",
+ ]
+ 
+ EXCLUDES = [
