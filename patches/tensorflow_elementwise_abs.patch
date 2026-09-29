@@ -1,0 +1,12 @@
+--- a/tensorflow/lite/kernels/elementwise.cc
++++ b/tensorflow/lite/kernels/elementwise.cc
+@@ -227,7 +227,8 @@
+   const TfLiteType type = input->type;
+   switch (type) {
+     case kTfLiteFloat32:
+-      return EvalImpl<float>(context, node, std::abs<float>, type);
++      return EvalImpl<float>(
++          context, node, [](float f) { return std::abs(f); }, type);
+     case kTfLiteInt8:
+       return AbsEvalQuantized<int8_t>(context, node, type);
+     case kTfLiteInt16:
