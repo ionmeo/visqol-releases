@@ -291,9 +291,9 @@ There are two options:
 ```
 pip install .
 ```
-Both approach require numpy and protobuf. Note that protobuf 6 is not yet supported (see [google/visqol#143](https://github.com/google/visqol/issues/143)).
+Both approaches require numpy and protobuf (protobuf 6 and newer are supported, fixing [google/visqol#143](https://github.com/google/visqol/issues/143)).
 ```
-pip install numpy "protobuf<6"
+pip install numpy protobuf
 ```
 #### Sample Program
 ```python

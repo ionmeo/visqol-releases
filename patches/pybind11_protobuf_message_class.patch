@@ -1,0 +1,19 @@
+--- a/pybind11_protobuf/proto_cast_util.cc
++++ b/pybind11_protobuf/proto_cast_util.cc
+@@ -198,9 +198,14 @@
+     auto message_factory =
+         ImportCached("google.protobuf.message_factory");
+     global_pool_ = descriptor_pool.attr("Default")();
+-    factory_ = message_factory.attr("MessageFactory")(global_pool_);
+     find_message_type_by_name_ = global_pool_.attr("FindMessageTypeByName");
+-    get_prototype_ = factory_.attr("GetPrototype");
++    // protobuf 6 replaced MessageFactory.GetPrototype with GetMessageClass.
++    if (py::hasattr(message_factory, "GetMessageClass")) {
++      get_prototype_ = message_factory.attr("GetMessageClass");
++    } else {
++      factory_ = message_factory.attr("MessageFactory")(global_pool_);
++      get_prototype_ = factory_.attr("GetPrototype");
++    }
+   } catch (py::error_already_set& e) {
+     if (IsImportError(e)) {
+       std::cerr << "Add a python dependency on "

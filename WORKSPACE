@@ -51,6 +51,8 @@ git_repository(
     remote = "https://github.com/pybind/pybind11_protobuf.git",
     commit = "83f055cc82d983b7d5c3ce3f59ec034ba546d094",
     shallow_since = "1647996190 -0700",
+    patch_args = ["-p1"],
+    patches = ["//:patches/pybind11_protobuf_message_class.patch"],
 )
 
 # For protobuf rule:
