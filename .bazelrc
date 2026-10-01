@@ -65,6 +65,12 @@ build --enable_platform_specific_config
 build:macos --macos_minimum_os=11.0
 
 
+## Reduce binary size
+# Do not add symbol tables in Linux and macOS binaries.
+build:linux --linkopt=-Wl,--strip-all
+build:macos --linkopt=-Wl,-x
+
+
 ## Windows config
 startup --windows_enable_symlinks
 build:windows --enable_runfiles

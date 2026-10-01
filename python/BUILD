@@ -2,10 +2,27 @@ load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
 
 licenses(["notice"])
 
+config_setting(
+    name = "linux",
+    constraint_values = ["@platforms//os:linux"],
+)
+
+config_setting(
+    name = "macos",
+    constraint_values = ["@platforms//os:osx"],
+)
+
 # Python Binding Extension
 pybind_extension(
     name = "visqol_lib_py",
     srcs = ["visqol_lib_py.cc"],
+    # Only export the symbol the Python binding needs (PyInit_visqol_lib_py)
+    additional_linker_inputs = ["visqol_lib_py.lds"],
+    linkopts = select({
+        ":linux": ["-Wl,--version-script=$(location visqol_lib_py.lds)"],
+        ":macos": ["-Wl,-exported_symbol,_PyInit_visqol_lib_py"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//:similarity_result_cc_proto",
