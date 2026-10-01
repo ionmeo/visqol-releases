@@ -1,0 +1,165 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      note:
+        description: 'Label for this run'
+        required: false
+        default: ''
+      tag:
+        description: 'Release tag'
+        required: true
+      overwrite:
+        description: 'Overwrite existing release'
+        type: boolean
+        default: false
+      strategy:
+        description: 'Artifact strategy'
+        type: choice
+        options:
+          - 'latest-run'
+          - 'latest-all-passed'
+          - 'latest-per-platform'
+        default: 'latest-all-passed'
+
+run-name: "${{ inputs.note || 'release' }}"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      BRANCH: ${{ github.event.repository.default_branch }}
+      PREFIX: visqol
+      PLATFORMS: "linux-amd64 linux-arm64 macos-amd64 macos-arm64 windows-amd64 windows-arm64"
+    steps:
+      - name: Check existing release
+        if: inputs.overwrite == false
+        run: |
+          if gh release view ${{ inputs.tag }} --repo $REPO 2>/dev/null; then
+            echo "::error::Release ${{ inputs.tag }} already exists. Must have overwrite=true."
+            exit 1
+          fi
+
+      - name: Check release to overwrite
+        if: inputs.overwrite == true
+        run: |
+          if ! gh release view ${{ inputs.tag }} --repo $REPO &>/dev/null; then
+            echo "::error::Release ${{ inputs.tag }} does not exist. Do not set overwrite=true."
+            exit 1
+          fi
+
+      - name: Collect artifacts (latest-run)
+        if: inputs.strategy == 'latest-run'
+        run: |
+          RUN_ID=$(gh run list --repo $REPO --workflow=ci.yml --branch $BRANCH --status=success --limit=1 --json databaseId -q '.[0].databaseId')
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::No successful build runs found."
+            exit 1
+          fi
+          # If latest-run does not have artifact of every platform, must have overwrite=true
+          NAMES=$(gh api repos/$REPO/actions/runs/$RUN_ID/artifacts --jq '.artifacts[].name')
+          MISSING=""
+          for P in $PLATFORMS; do
+            echo "$NAMES" | grep -q "^${PREFIX}-${P}$" || MISSING="$MISSING $PREFIX-$P"
+          done
+          if [ -n "$MISSING" ] && [ "${{ inputs.overwrite }}" != "true" ]; then
+            echo "::error::RUN_ID $RUN_ID does not have any artifact for:$MISSING. Use overwrite=true to update the other platforms."
+            exit 1
+          fi
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+
+      - name: Collect artifacts (latest-all-passed)
+        if: inputs.strategy == 'latest-all-passed'
+        run: |
+          RUNS=$(gh run list --repo $REPO --workflow=ci.yml --branch $BRANCH --status=success --limit=20 --json databaseId -q '.[].databaseId')
+          for RUN_ID in $RUNS; do
+            NAMES=$(gh api repos/$REPO/actions/runs/$RUN_ID/artifacts --jq '.artifacts[].name')
+            ALL=true
+            for P in $PLATFORMS; do
+              echo "$NAMES" | grep -q "^${PREFIX}-${P}$" || { ALL=false; break; }
+            done
+            if [ "$ALL" = true ]; then
+              echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+              echo "Found run with all 6 artifacts: $RUN_ID"
+              exit 0
+            fi
+          done
+          echo "::error::There are no run with all 6 artifacts in the last 20 runs."
+          exit 1
+
+      - name: Collect artifacts (latest-per-platform)
+        if: inputs.strategy == 'latest-per-platform'
+        run: |
+          RUNS=$(gh run list --repo $REPO --workflow=ci.yml --branch $BRANCH --status=completed --limit=20 --json databaseId -q '.[].databaseId')
+          DOWNLOADS=""
+          for P in $PLATFORMS; do
+            FOUND=false
+            for RUN_ID in $RUNS; do
+              if gh api repos/$REPO/actions/runs/$RUN_ID/artifacts --jq ".artifacts[].name" | grep -q "^${PREFIX}-${P}$"; then
+                echo "$PREFIX-$P -> run $RUN_ID"
+                DOWNLOADS="$DOWNLOADS $PREFIX-$P:$RUN_ID"
+                FOUND=true
+                break
+              fi
+            done
+            if [ "$FOUND" = false ]; then
+              echo "::error::No artifact found for $PREFIX-$P in the last 20 runs."
+              exit 1
+            fi
+          done
+          echo "DOWNLOADS=$DOWNLOADS" >> $GITHUB_ENV
+
+      - name: Download artifacts
+        run: |
+          if [ "${{ inputs.strategy }}" = "latest-per-platform" ]; then
+            for ENTRY in $DOWNLOADS; do
+              PLATFORM="${ENTRY%%:*}"
+              RUN_ID="${ENTRY##*:}"
+              echo "Downloading $PLATFORM from run $RUN_ID..."
+              gh run download $RUN_ID --repo $REPO --name "$PLATFORM" --dir "artifacts/$PLATFORM"
+            done
+            # Tag the latest commit among the artifact builds
+            LATEST_RUN=$(for ENTRY in $DOWNLOADS; do echo "${ENTRY##*:}"; done | sort -n | tail -1)
+            COMMIT_SHA=$(gh run view $LATEST_RUN --repo $REPO --json headSha -q .headSha)
+          else
+            echo "Downloading from run $RUN_ID..."
+            gh run download $RUN_ID --repo $REPO --dir artifacts
+            COMMIT_SHA=$(gh run view $RUN_ID --repo $REPO --json headSha -q .headSha)
+          fi
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_ENV
+
+      - name: Create archives
+        run: |
+          mkdir dist
+          cd artifacts
+          for dir in */; do
+            name="${dir%/}"
+            if [[ "$name" == *-windows-* ]]; then
+              zip -9 -r "../dist/$name.zip" "$name"
+            else
+              XZ_OPT=-9e tar -cJf "../dist/$name.tar.xz" "$name"
+            fi
+          done
+
+      - name: Upload to existing release
+        if: inputs.overwrite == true
+        run: gh release upload ${{ inputs.tag }} dist/* --clobber --repo $REPO
+
+      - name: Create new release
+        if: inputs.overwrite == false
+        run: gh release create ${{ inputs.tag }} dist/* --repo $REPO --title "${{ inputs.tag }}" --target $COMMIT_SHA --generate-notes
+
+      - name: Checkout repo
+        if: inputs.overwrite == true
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.COMMIT_SHA }}
+
+      - name: Update tag to the build's commit
+        if: inputs.overwrite == true
+        run: |
+          git tag -f ${{ inputs.tag }}
+          git push origin ${{ inputs.tag }} --force

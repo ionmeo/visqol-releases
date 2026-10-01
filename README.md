@@ -1,9 +1,12 @@
 # ViSQOL
 
+> This fork fixes the bugs encountered while building ViSQOL executables for amd64 and arm64 on Linux, macOS, and Windows. See the [full list of changes](https://github.com/ionmeo/visqol-releases/compare/38d0b01...master). Prebuilt executables and Python bindings are available on the [releases](https://github.com/ionmeo/visqol-releases/releases) page.
+
 ViSQOL (Virtual Speech Quality Objective Listener) is an objective, full-reference metric for perceived audio quality. It uses a spectro-temporal measure of similarity between a reference and a test speech signal to produce a MOS-LQO (Mean Opinion Score - Listening Quality Objective) score. MOS-LQO scores range from 1 (the worst) to 5 (the best).
 
 ## Table of Contents
 - [Features](#features)
+- [Prebuilt Releases](#prebuilt-releases)
 - [Build](#build)
 - [Command Line Usage](#command-line-usage)
 - [API Usage](#api-usage)
@@ -37,6 +40,13 @@ ViSQOL was trained with data from subjective tests that roughly follow industry 
 - Single scores are not very meaningful.  Rather, treatments should be aggregated over several samples that have the same treatment.
 - The choice of audio mode vs speech mode can have large effects on the output.
 
+## Prebuilt Releases
+| Platform | Requirements |
+| --- | --- |
+| Linux | glibc 2.34 or newer (e.g. Ubuntu 22.04+, Debian 12+) |
+| macOS | macOS 11 or newer |
+| Windows | [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) |
+
 ## Build
 
 #### Linux/Mac Build Instructions
@@ -68,6 +78,7 @@ ViSQOL was trained with data from subjective tests that roughly follow industry 
 #### Note Regarding Usage
 - When run from the command line, input signals must be in WAV format.
 
+- `visqol` looks for `model/` in the directory you run it from. If it's not there, pass the model path using `--similarity_to_quality_model`.
 
 #### Flags
 
@@ -274,9 +285,15 @@ int main(int argc, char **argv) {
 ```
 ## Python API Usage
 #### ViSQOL Installation
-From within the root directory install ViSQOL using pip.
+There are two options:
+- Use the `python/` folder from the [releases](https://github.com/ionmeo/visqol-releases/releases) which has bindings for Python 3.8 to 3.14 (3.11 to 3.14 on Windows ARM64).
+-  Build from source using pip from within the root directory.
 ```
 pip install .
+```
+Both approach require numpy and protobuf. Note that protobuf 6 is not yet supported (see [google/visqol#143](https://github.com/google/visqol/issues/143)).
+```
+pip install numpy "protobuf<6"
 ```
 #### Sample Program
 ```python
@@ -310,6 +327,23 @@ api.Create(config)
 similarity_result = api.Measure(reference, degraded)
 
 print(similarity_result.moslqo)
+```
+
+When using a prebuilt release, add the `python/` folder to the import path and import the modules directly:
+
+```python
+import os
+import sys
+
+sys.path.insert(0, "path/to/visqol-<os>-<arch>/python")
+
+import visqol_lib_py
+import visqol_config_pb2
+import similarity_result_pb2
+
+# ... same as above, except for the model path
+config.options.svr_model_path = os.path.join(
+    os.path.dirname(visqol_lib_py.__file__), "..", "model", svr_model_path)
 ```
 
 ## Dependencies
