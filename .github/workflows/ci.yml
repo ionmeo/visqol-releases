@@ -39,8 +39,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: 3.9
-      - name: Setup ViSQOL dependencies
-        uses: ./.github/actions/setup_visqol_deps
       - name: Build, test, and upload
         uses: ./.github/actions/visqol_builder
         with:
@@ -57,8 +55,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: 3.9
-      - name: Setup ViSQOL dependencies
-        uses: ./.github/actions/setup_visqol_deps
       - name: Build, test, and upload
         uses: ./.github/actions/visqol_builder
         with:
@@ -75,8 +71,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: 3.9
-      - name: Setup ViSQOL dependencies
-        uses: ./.github/actions/setup_visqol_deps
       - name: Build, test, and upload
         uses: ./.github/actions/visqol_builder
         with:
@@ -95,8 +89,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: 3.9
-      - name: Setup ViSQOL dependencies
-        uses: ./.github/actions/setup_visqol_deps
       - name: Build, test, and upload
         uses: ./.github/actions/visqol_builder
         with:
@@ -116,8 +108,6 @@ jobs:
       - name: Configure Windows build
         run: ./configure_windows.ps1
         shell: pwsh
-      - name: Setup ViSQOL dependencies
-        uses: ./.github/actions/setup_visqol_deps
       - name: Build, test, and upload
         uses: ./.github/actions/visqol_builder
         with:
@@ -137,8 +127,6 @@ jobs:
       - name: Configure Windows build
         run: ./configure_windows.ps1
         shell: pwsh
-      - name: Setup ViSQOL dependencies
-        uses: ./.github/actions/setup_visqol_deps
       - name: Build, test, and upload
         uses: ./.github/actions/visqol_builder
         with:
